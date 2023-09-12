@@ -1,0 +1,106 @@
+# Install and load the necessary packages if you haven't already
+# install.packages("shiny")
+# install.packages("shinydashboard")
+
+library(shiny)
+library(shinydashboard)
+
+# Define custom CSS styles
+custom_css <- "
+  .result-panel {
+    background: linear-gradient(to bottom, #3498db, #2980b9); /* Gradient background */
+    color: #fff; /* White text color */
+    padding: 20px;
+    border-radius: 10px;
+    margin-top: 20px;
+    font-size: 24px;
+    font-weight: bold;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3); /* Box shadow */
+    transition: background-color 0.3s ease; /* Transition effect */
+  }
+
+  .result-panel:hover {
+    background-color: #2980b9; /* Background color change on hover */
+  }
+
+  .sidebar-panel {
+    background-color: #3498db; /* Sidebar background color */
+    color: #fff; /* Sidebar text color */
+    padding: 20px;
+    border-radius: 10px;
+  }
+  
+  /* Custom button styles */
+  .custom-button {
+    background-color: #2ecc71; /* Button background color */
+    color: #fff; /* Button text color */
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease; /* Transition effect */
+  }
+  
+  .custom-button:hover {
+    background-color: #27ae60; /* Button color change on hover */
+  }
+"
+
+# Define the UI
+ui <- fluidPage(
+  titlePanel("🧮 Calculator"),
+  sidebarLayout(
+    sidebarPanel(
+      tags$style(HTML(".sidebar-panel {background-color: #3498db; color: #fff; padding: 20px; border-radius: 10px;}")),
+      numericInput("num1", "Enter number 1:", value = 0),
+      numericInput("num2", "Enter number 2:", value = 0),
+      selectInput("operation", "Select an operation:", 
+                  choices = c("➕ Add", "➖ Subtract", "✖️ Multiply", "➗ Divide")),
+      actionButton("calculate", "Calculate", icon = icon("play"), class = "custom-button") # Apply custom button style
+    ),
+    mainPanel(
+      h4("Result:"),
+      div(
+        verbatimTextOutput("result"),
+        class = "result-panel",
+        style = "color: #fff; font-size: 24px;"  # Apply inline styles here
+      )
+    )
+  ),
+  # Include custom CSS
+  tags$style(HTML(custom_css))
+)
+
+# Define the server logic
+server <- function(input, output) {
+  observeEvent(input$calculate, {
+    num1 <- input$num1
+    num2 <- input$num2
+    operation <- input$operation
+    
+    result <- switch(
+      operation,
+      "➕ Add" = num1 + num2,
+      "➖ Subtract" = num1 - num2,
+      "✖️ Multiply" = num1 * num2,
+      "➗ Divide" = if (num2 != 0) num1 / num2 else "Undefined"
+    )
+    
+    output$result <- renderText({
+      if (is.numeric(result)) {
+        paste("Result: 🎉", result)  # Added emoji to the result
+      } else {
+        paste("Result: ❌ Undefined (division by zero)")  # Added emoji for undefined result
+      }
+    })
+  })
+}
+
+# Run the Shiny app
+shinyApp(ui, server)
+
